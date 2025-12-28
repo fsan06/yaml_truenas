@@ -1,0 +1,13 @@
+services:
+  freshrss:
+    image: freshrss/freshrss:latest
+    container_name: freshrss
+    restart: unless-stopped
+    ports:
+      - 8085:80 # Puerto ajustado porque el 80 ya está en uso
+    volumes:
+      - /mnt/NewData/App_Config/freshrss/data:/var/www/FreshRSS/data
+      - /mnt/NewData/App_Config/freshrss/extensions:/var/www/FreshRSS/extensions
+    environment:
+      TZ: America/Los_Angeles
+      CRON_MIN: "*/20" # Actualiza feeds cada 20 minutos
