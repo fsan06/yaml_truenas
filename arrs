@@ -1,0 +1,164 @@
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/prowlarr/:/config
+      - /mnt/NewData/media:/media
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/radarr/:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/sonarr/:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/lidarr:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=America/Los_Angeles
+    ports:
+      - 5055:5055
+    volumes:
+      - ./configs/jellyseerr/:/app/config
+    restart: unless-stopped
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/jellyfin:/config
+      - /mnt/NewData/media:/media
+    ports:
+      - 8096:8096
+    restart: unless-stopped
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=America/Los_Angeles
+    ports:
+      - 8191:8191
+    restart: unless-stopped
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    hostname: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8080:8080 # qbittorrent WebUI
+      - 8082:8085 # sabnzbd WebUI (mapeado para acceso)
+      - 6881:6881/udp
+      - 6881:6881/tcp
+    volumes:
+      - ./configs/gluetun:/gluetun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - OPENVPN_USER=m45dyFBCtcV15KpW
+      - OPENVPN_PASSWORD=f0PR0oXk2RjcBB3OhxEuvRc2CNY5pCW8
+      - SERVER_COUNTRIES=United States,Finland
+      - VPN_TYPE=openvpn
+      - FIREWALL_INPUT_PORTS=6881
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    restart: unless-stopped
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    depends_on:
+      - gluetun
+    network_mode: service:gluetun
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+      - WEBUI_PORT=8080
+    volumes:
+      - ./configs/qbittorrent:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    restart: unless-stopped
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+    volumes:
+      - ./configs/bazarr:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    depends_on:
+      - gluetun
+    network_mode: service:gluetun
+    environment:
+      - PUID=950
+      - PGID=545
+      - TZ=America/Los_Angeles
+      - WEBUI_PORT=8080
+    volumes:
+      - ./configs/sabnzbd:/config
+      - /mnt/NewData/media:/media
+      - /mnt/NewData/media/downloads:/downloads
+    restart: unless-stopped
+networks: {}
