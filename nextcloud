@@ -1,0 +1,51 @@
+services:
+  mariadb:
+    image: mariadb:10.6
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Yf83d8$!kwA9zQhS # Contraseña segura
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: mNs93!jqpFz*27mR # Contraseña segura
+      TZ: America/Los_Angeles
+    volumes:
+      - /mnt/NewData/App_Config/mariadb:/var/lib/mysql
+    networks:
+      - nextcloud_net
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    depends_on:
+      - mariadb
+    environment:
+      - PUID=568
+      - PGID=568
+      - TZ=America/Los_Angeles
+      - MYSQL_PASSWORD=mNs93!jqpFz*27mR
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=mariadb
+    volumes:
+      - /mnt/NewData/nextcloud/config:/config
+      - /mnt/NewData/nextcloud:/data
+    ports:
+      - 8887:443
+    restart: unless-stopped
+    networks:
+      - nextcloud_net
+  collabora:
+    image: collabora/code
+    container_name: collabora
+    restart: unless-stopped
+    ports:
+      - 9980:9980
+    environment:
+      - TZ=America/Los_Angeles
+      - domain=next\\.fsancloud\\.uk
+    volumes:
+      - /mnt/NewData/App_Config/collabora:/data
+    networks:
+      - nextcloud_net
+networks:
+  nextcloud_net: {}
