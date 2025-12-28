@@ -1,0 +1,19 @@
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - 80:80 # HTTP (para redirecciones y Let's Encrypt)
+      - 81:81 # Panel de administración web
+      - 443:443 # HTTPS
+    volumes:
+      - /mnt/NewData/App_Config/npm/config:/data
+      - /mnt/NewData/App_Config/npm/certs:/etc/letsencrypt
+    environment:
+      TZ: America/Los_Angeles # Zona horaria correcta para tu región
+    networks:
+      - npm_network
+networks:
+  npm_network:
+    driver: bridge
