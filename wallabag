@@ -1,0 +1,54 @@
+services:
+  wallabag:
+    image: wallabag/wallabag:latest
+    container_name: wallabag
+    restart: unless-stopped
+    ports:
+      - 7780:80
+    environment:
+      - SYMFONY__ENV=prod
+      # Usamos la IP local para asegurar que cargue. Luego podrás cambiar a DuckDNS.
+      - SYMFONY__ENV__DOMAIN_NAME=https://wallanas.duckdns.org
+      - SYMFONY__ENV__DATABASE_DRIVER=pdo_mysql
+      - SYMFONY__ENV__DATABASE_HOST=db
+      - SYMFONY__ENV__DATABASE_PORT=3306
+      - SYMFONY__ENV__DATABASE_NAME=wallabag
+      - SYMFONY__ENV__DATABASE_USER=wallabag
+      - SYMFONY__ENV__DATABASE_PASSWORD=wallabagpass
+      - SYMFONY__ENV__SECRET=Ut7iWd+xD0K07uvoS3MU00mluIRmctmngEE7TaNVmyAYHY7eX9t9FcQ/oFg9t/Hz
+      - SYMFONY__ENV__REDIS_HOST=redis
+      - POPULATE_DATABASE=true
+    volumes:
+      - /mnt/NewData/App_Config/wallabag/images:/var/www/wallabag/web/assets/images
+      - /mnt/NewData/App_Config/wallabag/data:/var/www/wallabag/data
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  db:
+    image: mariadb:10.11
+    container_name: wallabag_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=wallabag
+      - MYSQL_USER=wallabag
+      - MYSQL_PASSWORD=wallabagpass
+    volumes:
+      - /mnt/NewData/App_Config/wallabag/db:/var/lib/mysql
+    healthcheck:
+      # Este comando es más fiable en MariaDB para saber si está lista para recibir datos
+      test:
+        - CMD
+        - healthcheck.sh
+        - --connect
+        - --innodb_initialized
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:alpine
+    container_name: wallabag_redis
+    restart: unless-stopped
+networks: {}
