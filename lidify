@@ -1,0 +1,54 @@
+services:
+  lidify:
+    image: chevron7locked/lidify:latest
+    container_name: lidify
+    restart: unless-stopped
+    user: 0:0
+    ports:
+      - 3030:3030
+    environment:
+      - PUID=3000
+      - PGID=3000
+      - TZ=America/Los_Angeles
+      - REDIS_URL=redis://redis:6379
+      - LIDARR_API_KEY=af4c5f25c33249828264c5092ffaecca
+      - LIDARR_URL=http://192.168.1.158:8686
+      - SLSKD_URL=http://slskd:5030
+      - DB_PATH=/data/lidify.db
+    volumes:
+      - /mnt/NewData/App_Config/lidify/data:/data
+      - /mnt/NewData/media/music:/music:ro
+      - /mnt/NewData/media/downloads/slskd:/downloads
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - redis
+      - slskd
+  slskd:
+    image: slskd/slskd:latest
+    container_name: slskd
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+      - SLSKD_HTTP_PORT=5030
+      - SLSKD_USERNAME=admin
+      - SLSKD_PASSWORD=admin_password123
+      - SLSKD_SLSK_USERNAME=fsan6
+      - SLSKD_SLSK_PASSWORD=Caldone-promo98!
+      - SLSKD_REMOTE_CONFIGURATION=true
+      # Estas 3 variables fuerzan la ruta de descarga por encima del archivo .yml
+      - SLSKD_INCOMPLETE_DIR=/downloads/incomplete
+      - SLSKD_DOWNLOAD_DIR=/downloads
+      - SLSKD_COMPLETED_DIR=/downloads
+    volumes:
+      - /mnt/NewData/App_Config/slskd:/config
+      - /mnt/NewData/media/downloads/slskd:/downloads
+      - /mnt/NewData/media/music:/music
+    ports:
+      - 5030:5030
+  redis:
+    image: redis:alpine
+    container_name: lidify_redis
+    restart: unless-stopped
+    command: redis-server --port 6379
+networks: {}
