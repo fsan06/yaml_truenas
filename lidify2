@@ -1,0 +1,34 @@
+services:
+  lidify:
+    image: chevron7locked/lidify:latest
+    container_name: lidify
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+      - LIDARR_API_KEY=af4c5f25c33249828264c5092ffaecca
+      - LIDARR_URL=http://localhost:8686
+      - SLSKD_URL=http://localhost:5030
+      - DB_PATH=/data/lidify.db
+    volumes:
+      - /mnt/NewData/App_Config/lidify:/data
+      - /mnt/NewData/media/music:/music
+      - /mnt/NewData/media/downloads/slskd:/downloads
+  slskd:
+    image: slskd/slskd:latest
+    container_name: slskd
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=America/Los_Angeles
+      - SLSKD_HTTP_PORT=5030
+      - SLSKD_USERNAME=admin
+      - SLSKD_PASSWORD=admin
+      - SLSKD_SLSK_USERNAME=fsan6
+      - SLSKD_SLSK_PASSWORD=Caldone-promo98!
+      - SLSKD_REMOTE_CONFIGURATION=true
+      - SLSKD_DOWNLOAD_DIR=/downloads
+    volumes:
+      - /mnt/NewData/App_Config/slskd:/config
+      - /mnt/NewData/media/downloads/slskd:/downloads
+networks: {}
